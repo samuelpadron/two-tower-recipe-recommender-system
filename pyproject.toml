@@ -1,7 +1,7 @@
 [project]
-name = "hands-on-recommender-system"
+name = "two-tower-recipe-recommender-system"
 version = "0.1.0"
-description = "Add your description here"
+description = "Two-Tower based recommender system for recipes from Food.com"
 readme = "README.md"
 requires-python = "~=3.11"
 dependencies = [
@@ -20,6 +20,10 @@ dependencies = [
     "streamlit==1.28.2",
     "tensorflow-recommenders==0.7.2",
     "tensorflow==2.14",
+    "pandas>=2.2.2",
+    "numpy>=1.26.4",
+    "kagglehub==0.3.4",
+    "matplotlib>=3.4.0",
 ]
 
 [dependency-groups]
