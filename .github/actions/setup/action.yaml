@@ -1,0 +1,27 @@
+name: 'ML Environment Setup'
+description: 'Sets up Python environment with uv and project dependencies'
+
+inputs:
+  uv-version:
+    description: 'Version of uv to install'
+    required: false
+    default: '0.4.30'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: ${{ inputs.uv-version }}
+
+    - name: Create and activate virtual environment
+      shell: bash
+      run: |
+        uv venv
+        source .venv/bin/activate
+
+    - name: Install the project
+      shell: bash
+      run: |
+        uv pip install --all-extras --requirement pyproject.toml

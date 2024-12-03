@@ -1,0 +1,88 @@
+name: ML Pipelines
+
+on:
+  # schedule: # Uncomment to run the pipelines every 2 hours. All the pipelines take ~1.5 hours to run.
+  #   - cron: '0 */2 * * *'
+  # push: # Uncomment to run pipelines on every new commit to main
+  #   branches:
+  #     - main
+  workflow_dispatch:  # Allows manual triggering from GitHub UI
+      
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  feature_engineering:
+    name: Compute Features
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - uses: ./.github/actions/setup
+
+      - name: Run pipeline
+        run: uv run ipython notebooks/1_fp_computing_features.ipynb
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+
+  train_retrieval:
+    needs: feature_engineering
+    name: Train Retrieval Model
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - uses: ./.github/actions/setup
+
+      - name: Run pipeline
+        run: uv run ipython notebooks/2_tp_training_retrieval_model.ipynb
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+
+  train_ranking:
+    needs: feature_engineering
+    name: Train Ranking Model
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - uses: ./.github/actions/setup
+
+      - name: Run pipeline
+        run: uv run ipython notebooks/3_tp_training_ranking_model.ipynb
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+
+  computing_and_indexing_embeddings:
+    needs: train_retrieval
+    name: Compute Embeddings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - uses: ./.github/actions/setup
+
+      - name: Run pipeline
+        run: uv run ipython notebooks/4_ip_computing_item_embeddings.ipynb
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+
+  create_deployments:
+    needs: computing_and_indexing_embeddings
+    name: Create Deployments
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - uses: ./.github/actions/setup
+
+      - name: Run pipeline
+        run: uv run ipython notebooks/5_ip_creating_deployments.ipynb
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
